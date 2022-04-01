@@ -1,6 +1,6 @@
 build
 dist
-connexion.egg-info
+especifico.egg-info
 __pycache__
 .coverage
 *.egg
