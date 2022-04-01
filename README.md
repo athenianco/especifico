@@ -245,19 +245,12 @@ available type castings are:
 | OpenAPI Type   | Python Type   |
 |----------------|---------------|
 | integer        | int           |
-| -------------- | ------------- |
 | string         | str           |
-| -------------- | ------------- |
 | number         | float         |
-| -------------- | ------------- |
 | boolean        | bool          |
-| -------------- | ------------- |
 | array          | list          |
-| -------------- | ------------- |
 | null           | None          |
-| -------------- | ------------- |
 | object         | dict          |
-| -------------- | ------------- |
 
 If you use the `array` type In the Swagger definition, you can define the
 `collectionFormat` so that it won't be recognized. Específico currently
@@ -283,32 +276,12 @@ You can implement your own URI parsing behavior by inheriting from
 
 There are a handful of URI parsers included with connection.
 
-| Parser               | Description                                                                                                           |
-|----------------------|-----------------------------------------------------------------------------------------------------------------------|
-| OpenAPIURIParser     | This parser adheres to the OpenAPI 3.x.x spec, and uses the `style`                                                   |
-| default: OpenAPI 3.0 | parameter. Query parameters are parsed from left to right, so if a query                                              |
-|                      | parameter is defined twice, then the right-most definition will take                                                  |
-|                      | precedence. For example, if you provided a URI with the query string                                                  |
-|                      | `?letters=a,b,c&letters=d,e,f`, and `style: simple`, then especifico                                                  |
-|                      | will set `letters = ['d', 'e', 'f']`. For additional information see                                                  |
-|                      | [OpenAPI 3.0 Style Values`](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#style-values). |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Swagger2URIParser    | This parser adheres to the Swagger 2.0 spec, and will only join together                                              |
-| default: OpenAPI 2.0 | multiple instance of the same query parameter if the `collectionFormat`                                               |
-|                      | is set to `multi`. Query parameters are parsed from left to right, so                                                 |
-|                      | if a query parameter is defined twice, then the right-most definition                                                 |
-|                      | wins. For example, if you provided a URI with the query string                                                        |
-|                      | `?letters=a,b,c&letters=d,e,f`, and `collectionFormat: csv`, then                                                     |
-|                      | especifico will set `letters = ['d', 'e', 'f']`                                                                       |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| FirstValueURIParser  | This parser behaves like the Swagger2URIParser, except that it prefers                                                |
-|                      | the first defined value. For example, if you provided a URI with the query                                            |
-|                      | string `?letters=a,b,c&letters=d,e,f` and `collectionFormat: csv`                                                     |
-|                      | hen especifico will set `letters = ['a', 'b', 'c']`                                                                   |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| AlwaysMultiURIParser | This parser is backwards compatible with Específico 1.x. It joins together                                            |
-|                      | multiple instances of the same query parameter.                                                                       |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Parser                                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+|-------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| OpenAPIURIParser<br>default: OpenAPI 3.0  | This parser adheres to the OpenAPI 3.x.x spec, and uses the `style` parameter. Query parameters are parsed from left to right, so if a query parameter is defined twice, then the right-most definition will take precedence. For example, if you provided a URI with the query string `?letters=a,b,c&letters=d,e,f`, and `style: simple`, then especifico will set `letters = ['d', 'e', 'f']`. For additional information see [OpenAPI 3.0 Style Values`](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#style-values). |
+| Swagger2URIParser<br>default: OpenAPI 2.0 | This parser adheres to the Swagger 2.0 spec, and will only join together multiple instance of the same query parameter if the `collectionFormat` is set to `multi`. Query parameters are parsed from left to right, so if a query parameter is defined twice, then the right-most definition wins. For example, if you provided a URI with the query string `?letters=a,b,c&letters=d,e,f`, and `collectionFormat: csv`, then especifico will set `letters = ['d', 'e', 'f']`.                                                                         |
+| FirstValueURIParser                       | This parser behaves like the Swagger2URIParser, except that it prefers the first defined value. For example, if you provided a URI with the query string `?letters=a,b,c&letters=d,e,f` and `collectionFormat: csv` then especifico will set `letters = ['a', 'b', 'c']`.                                                                                                                                                                                                                                                                              |
+| AlwaysMultiURIParser                      | This parser is backwards compatible with Específico 1.x. It joins together multiple instances of the same query parameter.                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 ### Parameter validation
 
