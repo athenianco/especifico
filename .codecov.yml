@@ -1,0 +1,13 @@
+comment: false
+ignore:
+  - especifico/cli.py
+coverage:
+  status:
+    patch: off
+    project:
+      default:
+        target: auto
+        threshold: 0%
+        informational: true
+        paths:
+          - "especifico"
