@@ -1,2 +1,2 @@
 set -x
-pytest --cov especifico --cov-report term-missing -v tests/
+pytest --cov especifico --cov-report xml -v tests/

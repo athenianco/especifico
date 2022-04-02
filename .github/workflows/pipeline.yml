@@ -41,6 +41,10 @@ jobs:
         pip install .[cli,tests,flask,aiohttp,swagger-ui]
     - name: Unit tests
       run: scripts/test
+    - uses: codecov/codecov-action@v1
+      name: codecov
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
   bump_version:
     name: Bump the version
     needs: [ lint, test ]
