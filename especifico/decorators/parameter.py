@@ -50,6 +50,19 @@ def snake_and_shadow(name):
     return snake
 
 
+def sanitized(name: str) -> str:
+    """Change the argument so that it becomes a valid Python identifier."""
+    return name and re.sub("^[^a-zA-Z_]+", "",
+                           re.sub("[^0-9a-zA-Z_]", "",
+                                  re.sub(r"\[(?!])", "_", name)))
+
+
+def pythonic(name: str) -> str:
+    """Change the argument so that it becomes an idiomatic Python identifier."""
+    name = name and snake_and_shadow(name)
+    return sanitized(name)
+
+
 def parameter_to_arg(operation, function, pythonic_params=False, pass_context_arg_name=None):
     """
     Pass query and body parameters as keyword arguments to handler function.
@@ -66,15 +79,6 @@ def parameter_to_arg(operation, function, pythonic_params=False, pass_context_ar
     :type pass_context_arg_name: str|None
     """
     consumes = operation.consumes
-
-    def sanitized(name):
-        return name and re.sub(
-            "^[^a-zA-Z_]+", "", re.sub("[^0-9a-zA-Z[_]", "", re.sub(r"[\[]", "_", name)),
-        )
-
-    def pythonic(name):
-        name = name and snake_and_shadow(name)
-        return sanitized(name)
 
     sanitize = pythonic if pythonic_params else sanitized
     arguments, has_kwargs = inspect_function_arguments(function)
