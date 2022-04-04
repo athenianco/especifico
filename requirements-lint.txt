@@ -17,7 +17,7 @@ flake8-rst-docstrings==0.2.3
 isort==5.9.1
 mypy==0.942
 types-PyYAML==6.0.5
-types-requests==2.27.15
+types-requests==2.27.16
 types-setuptools==57.4.11
 types-ujson==4.2.1
 sphinx-autoapi==1.8.1
