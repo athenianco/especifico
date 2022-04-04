@@ -4,6 +4,7 @@ This module centralizes all functionality related to json encoding and decoding 
 
 import datetime
 import json
+from typing import Any, AnyStr, Optional
 import uuid
 
 
@@ -50,22 +51,15 @@ class Jsonifier:
         self.dumps_args = kwargs
 
     def dumps(self, data, **kwargs):
-        """Central point where JSON serialization happens inside
-        Especifico.
-        """
+        """Central point where JSON serialization happens inside Especifico."""
         for k, v in self.dumps_args.items():
             kwargs.setdefault(k, v)
         return self.json.dumps(data, **kwargs) + "\n"
 
-    def loads(self, data):
-        """Central point where JSON deserialization happens inside
-        Especifico.
-        """
+    def loads(self, data: Optional[AnyStr]) -> Optional[Any]:
+        """Central point where JSON deserialization happens inside Especifico."""
+        if data is None or len(data) == 0:
+            return None
         if isinstance(data, bytes):
             data = data.decode()
-
-        try:
-            return self.json.loads(data)
-        except Exception:
-            if isinstance(data, str):
-                return data
+        return self.json.loads(data)

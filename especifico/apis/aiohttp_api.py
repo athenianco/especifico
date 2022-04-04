@@ -299,7 +299,7 @@ class AioHttpApi(AbstractAPI):
         form = {}
 
         if post_data:
-            logger.debug("Reading multipart data from request")
+            logger.debug("Reading multipart data [%d] from request", len(post_data))
             for k, v in post_data.items():
                 if isinstance(v, web.FileField):
                     if k in files:
@@ -316,7 +316,6 @@ class AioHttpApi(AbstractAPI):
                     # put normal fields as an array, that's how werkzeug does that for Flask
                     # and that's what Especifico expects in its processing functions
                     form[k] = [v]
-            body = b""
         else:
             logger.debug("Reading data from request")
             body = await req.read()
@@ -427,12 +426,8 @@ class AioHttpApi(AbstractAPI):
 
 class _HttpNotFoundError(HTTPNotFound):
     def __init__(self):
-        self.name = "Not Found"
-        self.description = (
-            "The requested URL was not found on the server. "
-            "If you entered the URL manually please check your spelling and "
-            "try again."
-        )
+        self.name = HTTPStatus.NOT_FOUND.phrase
+        self.description = HTTPStatus.NOT_FOUND.description
         self.code = type(self).status_code
         self.empty_body = True
 

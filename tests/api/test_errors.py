@@ -14,7 +14,7 @@ def test_errors(problem_app):
     assert greeting404.content_type == "application/problem+json"
     assert greeting404.status_code == 404
     error404 = flask.json.loads(fix_data(greeting404.data))
-    assert error404["type"] == "about:blank"
+    assert error404["type"] == "/errors/NotFound"
     assert error404["title"] == "Not Found"
     assert (
         error404["detail"] == "The requested URL was not found on the server. "
@@ -27,7 +27,7 @@ def test_errors(problem_app):
     assert get_greeting.content_type == "application/problem+json"
     assert get_greeting.status_code == 405
     error405 = json.loads(get_greeting.data.decode("utf-8", "replace"))
-    assert error405["type"] == "about:blank"
+    assert error405["type"] == "/errors/MethodNotAllowed"
     assert error405["title"] == "Method Not Allowed"
     assert error405["detail"] == "The method is not allowed for the requested URL."
     assert error405["status"] == 405
@@ -37,7 +37,7 @@ def test_errors(problem_app):
     assert get500.content_type == "application/problem+json"
     assert get500.status_code == 500
     error500 = json.loads(get500.data.decode("utf-8", "replace"))
-    assert error500["type"] == "about:blank"
+    assert error500["type"] == "/errors/InternalServerError"
     assert error500["title"] == "Internal Server Error"
     assert (
         error500["detail"]
@@ -62,7 +62,7 @@ def test_errors(problem_app):
     assert get_problem2.content_type == "application/problem+json"
     assert get_problem2.status_code == 418
     error_problem2 = json.loads(get_problem2.data.decode("utf-8", "replace"))
-    assert error_problem2["type"] == "about:blank"
+    assert error_problem2["type"] == "/errors/SomeError"
     assert error_problem2["title"] == "Some Error"
     assert error_problem2["detail"] == "Something went wrong somewhere"
     assert error_problem2["status"] == 418
@@ -85,17 +85,18 @@ def test_errors(problem_app):
     assert "age" in problem_as_exception_body
     assert problem_as_exception_body["age"] == 30
 
-    unsupported_media_type = app_client.post(
-        "/v1.0/post_wrong_content_type", data="<html></html>", content_type="text/html",
-    )
-    assert unsupported_media_type.status_code == 415
-    unsupported_media_type_body = json.loads(
-        unsupported_media_type.data.decode("utf-8", "replace"),
-    )
-    assert unsupported_media_type_body["type"] == "about:blank"
-    assert unsupported_media_type_body["title"] == "Unsupported Media Type"
-    assert (
-        unsupported_media_type_body["detail"]
-        == "Invalid Content-type (text/html), expected JSON data"
-    )
-    assert unsupported_media_type_body["status"] == 415
+    for content_type in ("application/x-www-form-urlencoded", "text/html"):
+        unsupported_media_type = app_client.post(
+            "/v1.0/post_wrong_content_type", data="<html></html>", content_type=content_type,
+        )
+        assert unsupported_media_type.status_code == 415
+        unsupported_media_type_body = json.loads(
+            unsupported_media_type.data.decode("utf-8", "replace"),
+        )
+        assert unsupported_media_type_body["type"] == "/errors/UnsupportedMediaType"
+        assert unsupported_media_type_body["title"] == "Unsupported Media Type"
+        assert (
+            unsupported_media_type_body["detail"]
+            == f"Invalid Content-Type ({content_type}), expected JSON"
+        )
+        assert unsupported_media_type_body["status"] == 415

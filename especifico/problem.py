@@ -30,7 +30,7 @@ def problem(
     :type detail: str
     :param type: An absolute URI that identifies the problem type.  When dereferenced, it SHOULD provide human-readable
                  documentation for the problem type (e.g., using HTML).  When this member is not present its value is
-                 assumed to be "about:blank".
+                 assumed to be "/errors/CamelCaseErrorName".
     :type: type: str
     :param instance: An absolute URI that identifies the specific occurrence of the problem.  It may or may not yield
                      further information if dereferenced.
@@ -43,7 +43,7 @@ def problem(
     :rtype: EspecificoResponse
     """  # noqa
     if not type:
-        type = "about:blank"
+        type = f"/errors/{title.replace(' ', '')}"
 
     problem_response = {
         "type": type,
