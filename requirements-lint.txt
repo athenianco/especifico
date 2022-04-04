@@ -13,7 +13,7 @@ sqlalchemy-stubs==0.4
 types-pytz==2021.3.6
 types-croniter==1.0.8
 bandit==1.7.4
-flake8-rst-docstrings==0.2.3
+flake8-rst-docstrings==0.2.5
 isort==5.10.1
 mypy==0.942
 types-PyYAML==6.0.5
