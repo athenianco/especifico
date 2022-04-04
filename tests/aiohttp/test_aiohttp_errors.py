@@ -32,7 +32,7 @@ async def test_aiohttp_problems_404(aiohttp_app, aiohttp_client):
     assert greeting404.status == 404
     error404 = await greeting404.json()
     assert is_valid_problem_json(error404)
-    assert error404["type"] == "about:blank"
+    assert error404["type"] == "/errors/NotFound"
     assert error404["title"] == "Not Found"
     assert error404["detail"] == HTTPStatus(404).description
     assert error404["status"] == 404
@@ -49,7 +49,7 @@ async def test_aiohttp_problems_405(aiohttp_app, aiohttp_client):
     assert get_greeting.status == 405
     error405 = await get_greeting.json()
     assert is_valid_problem_json(error405)
-    assert error405["type"] == "about:blank"
+    assert error405["type"] == "/errors/MethodNotAllowed"
     assert error405["title"] == "Method Not Allowed"
     assert error405["detail"] == HTTPStatus(405).description
     assert error405["status"] == 405
@@ -66,7 +66,7 @@ async def test_aiohttp_problems_500(aiohttp_app, aiohttp_client):
     assert get500.status == 500
     error500 = await get500.json()
     assert is_valid_problem_json(error500)
-    assert error500["type"] == "about:blank"
+    assert error500["type"] == "/errors/InternalServerError"
     assert error500["title"] == "Internal Server Error"
     assert error500["detail"] == HTTPStatus(500).description
     assert error500["status"] == 500
@@ -137,7 +137,7 @@ async def test_aiohttp_problem_with_text_content_type(aiohttp_app, aiohttp_clien
     assert get_problem2.status == 418
     error_problem2 = await get_problem2.json()
     assert is_valid_problem_json(error_problem2)
-    assert error_problem2["type"] == "about:blank"
+    assert error_problem2["type"] == "/errors/SomeError"
     assert error_problem2["title"] == "Some Error"
     assert error_problem2["detail"] == "Something went wrong somewhere"
     assert error_problem2["status"] == 418

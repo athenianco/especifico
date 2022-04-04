@@ -148,12 +148,16 @@ class RequestBodyValidator:
         @functools.wraps(function)
         def wrapper(request):
             if all_json(self.consumes):
-                data = request.json
+                try:
+                    data = request.json
+                except Exception as e:
+                    raise BadRequestProblem(detail=f"Request body is not valid JSON: {e}") from e
 
                 empty_body = not (request.body or request.form or request.files)
                 if data is None and not empty_body and not self.is_null_value_valid:
+                    content_type = request.headers.get("Content-Type", "")
                     try:
-                        ctype_is_json = is_json_mimetype(request.headers.get("Content-Type", ""))
+                        ctype_is_json = is_json_mimetype(content_type)
                     except ValueError:
                         ctype_is_json = False
 
@@ -163,8 +167,7 @@ class RequestBodyValidator:
                     else:
                         # the body has contents that were not parsed as JSON
                         raise UnsupportedMediaTypeProblem(
-                            detail=f"Invalid Content-type ({request.headers.get('Content-Type', '')}), "  # noqa
-                                   f"expected JSON data",
+                            detail=f"Invalid Content-Type ({content_type}), expected JSON",
                         )
 
                 logger.debug("%s validating schema...", request.url)
@@ -172,7 +175,7 @@ class RequestBodyValidator:
                     self.validate_schema(data, request.url)
             elif self.consumes[0] in FORM_CONTENT_TYPES:
                 data = dict(request.form.items()) or (
-                    request.body if len(request.body) > 0 else {}
+                    request.body if len(request.body or []) > 0 else {}
                 )
                 data.update(dict.fromkeys(request.files, ""))  # validator expects string..
                 logger.debug("%s validating schema...", request.url)

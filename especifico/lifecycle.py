@@ -7,6 +7,21 @@ validation, serialization, etc.
 class EspecificoRequest:
     """Especifico interface for a request."""
 
+    __slots__ = (
+        "url",
+        "method",
+        "path_params",
+        "query",
+        "headers",
+        "form",
+        "body",
+        "_json",
+        "json_getter",
+        "files",
+        "context",
+        "cookies",
+    )
+
     def __init__(
         self,
         url,
@@ -28,6 +43,7 @@ class EspecificoRequest:
         self.headers = headers or {}
         self.form = form or {}
         self.body = body
+        self._json = None
         self.json_getter = json_getter
         self.files = files
         self.context = context if context is not None else {}
@@ -35,13 +51,22 @@ class EspecificoRequest:
 
     @property
     def json(self):
-        if not hasattr(self, "_json"):
+        if self._json is None:
             self._json = self.json_getter()
         return self._json
 
 
 class EspecificoResponse:
     """Especifico interface for a response."""
+
+    __slots__ = (
+        "status_code",
+        "mimetype",
+        "content_type",
+        "body",
+        "headers",
+        "is_streamed",
+    )
 
     def __init__(
         self,

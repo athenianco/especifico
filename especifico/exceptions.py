@@ -1,13 +1,10 @@
 """
 This module defines Exception classes used by Especifico to generate a proper response.
 """
-
-import warnings
+from http import HTTPStatus
 
 from jsonschema.exceptions import ValidationError
 from werkzeug.exceptions import Forbidden, Unauthorized
-
-from .problem import problem
 
 
 class EspecificoException(Exception):
@@ -17,8 +14,8 @@ class EspecificoException(Exception):
 class ProblemException(EspecificoException):
     def __init__(
         self,
-        status=400,
-        title=None,
+        status=HTTPStatus.BAD_REQUEST,
+        title=HTTPStatus.BAD_REQUEST.phrase,
         detail=None,
         type=None,
         instance=None,
@@ -36,22 +33,6 @@ class ProblemException(EspecificoException):
         self.instance = instance
         self.headers = headers
         self.ext = ext
-
-    def to_problem(self):
-        warnings.warn(
-            "'to_problem' is planned to be removed in a future release. "
-            "Call especifico.problem.problem(..) instead to maintain the existing error response.",
-            DeprecationWarning,
-        )
-        return problem(
-            status=self.status,
-            title=self.title,
-            detail=self.detail,
-            type=self.type,
-            instance=self.instance,
-            headers=self.headers,
-            ext=self.ext,
-        )
 
 
 class ResolverError(LookupError):
@@ -78,12 +59,12 @@ class InvalidSpecification(EspecificoException, ValidationError):
 
 
 class NonConformingResponse(ProblemException):
-    def __init__(self, reason="Unknown Reason", message=None):
+    def __init__(self, reason="Unknown Reason", message=None, type=None):
         """
         :param reason: Reason why the response did not conform to the specification
         :type reason: str
         """
-        super().__init__(status=500, title=reason, detail=message)
+        super().__init__(status=500, title=reason, detail=message, type=type)
         self.reason = reason
         self.message = message
 
@@ -105,23 +86,40 @@ class ResolverProblem(ProblemException):
 
 
 class BadRequestProblem(ProblemException):
-    def __init__(self, title="Bad Request", detail=None):
-        super().__init__(status=400, title=title, detail=detail)
+    def __init__(self, detail=None):
+        super().__init__(
+            status=HTTPStatus.BAD_REQUEST,
+            title=HTTPStatus.BAD_REQUEST.phrase,
+            detail=detail,
+        )
 
 
 class UnsupportedMediaTypeProblem(ProblemException):
-    def __init__(self, title="Unsupported Media Type", detail=None):
-        super().__init__(status=415, title=title, detail=detail)
+    def __init__(self, detail=None):
+        super().__init__(
+            type="/errors/UnsupportedMediaType",
+            status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
+            title=HTTPStatus.UNSUPPORTED_MEDIA_TYPE.phrase,
+            detail=detail,
+        )
 
 
 class NonConformingResponseBody(NonConformingResponse):
     def __init__(self, message, reason="Response body does not conform to specification"):
-        super().__init__(reason=reason, message=message)
+        super().__init__(
+            type="/errors/NonConformingResponseBody",
+            reason=reason,
+            message=message,
+        )
 
 
 class NonConformingResponseHeaders(NonConformingResponse):
     def __init__(self, message, reason="Response headers do not conform to specification"):
-        super().__init__(reason=reason, message=message)
+        super().__init__(
+            type="/errors/NonConformingResponseHeaders",
+            reason=reason,
+            message=message,
+        )
 
 
 class OAuthProblem(Unauthorized):
@@ -143,7 +141,7 @@ class OAuthScopeProblem(Forbidden):
 
 
 class ExtraParameterProblem(ProblemException):
-    def __init__(self, formdata_parameters, query_parameters, title=None, detail=None, **kwargs):
+    def __init__(self, formdata_parameters, query_parameters, detail=None, **kwargs):
         self.extra_formdata = formdata_parameters
         self.extra_query = query_parameters
 
@@ -156,4 +154,4 @@ class ExtraParameterProblem(ProblemException):
                 detail = "Extra formData parameter%s %s not in spec" % \
                     ("s" if len(self.extra_formdata) > 1 else "", ", ".join(self.extra_formdata))
 
-        super().__init__(title=title, detail=detail, **kwargs)
+        super().__init__(type="/errors/ExtraParameter", detail=detail, **kwargs)

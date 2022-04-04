@@ -50,9 +50,18 @@ class ResponseValidator(BaseDecorator):
             v = ResponseBodyValidator(response_schema, validator=self.validator)
             try:
                 data = self.operation.json_loads(data)
+            except ValueError as e:
+                if content_type != "text/plain":
+                    raise NonConformingResponseBody(message=str(e)) from e
+                elif isinstance(data, bytes):
+                    try:
+                        data = data.decode("utf-8")
+                    except UnicodeDecodeError as e:
+                        raise NonConformingResponseBody(message=str(e)) from None
+            try:
                 v.validate_schema(data, url)
             except ValidationError as e:
-                raise NonConformingResponseBody(message=str(e))
+                raise NonConformingResponseBody(message=str(e)) from e
 
         if response_definition and response_definition.get("headers"):
             required_header_keys = {
