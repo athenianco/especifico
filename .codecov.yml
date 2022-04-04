@@ -1,6 +1,7 @@
 comment: false
 ignore:
-  - especifico/cli.py
+- setup.py
+- especifico/cli.py
 coverage:
   status:
     patch: off
@@ -10,4 +11,4 @@ coverage:
         threshold: 0%
         informational: true
         paths:
-          - "especifico"
+        - "especifico"
