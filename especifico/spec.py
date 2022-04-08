@@ -132,13 +132,13 @@ class Specification(Mapping):
 
         with specification.open(mode="rb") as openapi_yaml:
             contents = openapi_yaml.read()
-            try:
-                openapi_template = contents.decode()
-            except UnicodeDecodeError:
-                openapi_template = contents.decode("utf-8", "replace")
+        try:
+            openapi_template = contents.decode()
+        except UnicodeDecodeError:
+            openapi_template = contents.decode("utf-8", "replace")
 
-            openapi_string = jinja2.Template(openapi_template).render(**arguments)
-            return yaml.load(openapi_string, Loader=YAMLSafeLoader)
+        openapi_string = jinja2.Template(openapi_template).render(**arguments)
+        return yaml.load(openapi_string, Loader=YAMLSafeLoader)
 
     @classmethod
     def from_file(cls, spec, arguments=None):
