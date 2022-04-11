@@ -18,6 +18,6 @@ isort==5.10.1
 mypy==0.942
 types-PyYAML==6.0.5
 types-requests==2.27.16
-types-setuptools==57.4.11
+types-setuptools==57.4.12
 types-ujson==4.2.1
 sphinx-autoapi==1.8.1
