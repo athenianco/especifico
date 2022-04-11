@@ -16,6 +16,11 @@ from jsonschema import Draft4Validator
 from jsonschema.validators import extend as extend_validator
 import yaml
 
+try:
+    from yaml import CSafeLoader as YAMLSafeLoader
+except ImportError:
+    from yaml import SafeLoader as YAMLSafeLoader
+
 from .exceptions import InvalidSpecification
 from .json_schema import NullableTypeValidator, resolve_refs
 from .operations import OpenAPIOperation, Swagger2Operation
@@ -127,13 +132,13 @@ class Specification(Mapping):
 
         with specification.open(mode="rb") as openapi_yaml:
             contents = openapi_yaml.read()
-            try:
-                openapi_template = contents.decode()
-            except UnicodeDecodeError:
-                openapi_template = contents.decode("utf-8", "replace")
+        try:
+            openapi_template = contents.decode()
+        except UnicodeDecodeError:
+            openapi_template = contents.decode("utf-8", "replace")
 
-            openapi_string = jinja2.Template(openapi_template).render(**arguments)
-            return yaml.safe_load(openapi_string)
+        openapi_string = jinja2.Template(openapi_template).render(**arguments)
+        return yaml.load(openapi_string, Loader=YAMLSafeLoader)
 
     @classmethod
     def from_file(cls, spec, arguments=None):
