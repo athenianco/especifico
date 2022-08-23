@@ -181,8 +181,8 @@ class AbstractSecurityHandlerFactory(abc.ABC):
 
         try:
             auth_type, value = authorization.split(None, 1)
-        except ValueError:
-            raise OAuthProblem(description="Invalid authorization header")
+        except ValueError as e:
+            raise OAuthProblem(description="Invalid authorization header") from e
         return auth_type.lower(), value
 
     def verify_oauth(self, token_info_func, scope_validate_func, required_scopes):
