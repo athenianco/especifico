@@ -9,7 +9,7 @@ import functools
 import logging
 from typing import AnyStr, Union
 
-from jsonschema import Draft4Validator, ValidationError, draft4_format_checker
+from jsonschema import Draft4Validator, ValidationError
 from jsonschema.validators import extend
 from werkzeug.datastructures import FileStorage
 
@@ -23,6 +23,11 @@ from ..utils import all_json, boolean, is_json_mimetype, is_null, is_nullable
 logger = logging.getLogger("especifico.decorators.validation")
 
 TYPE_MAP = {"integer": int, "number": float, "boolean": boolean, "object": dict}
+
+try:
+    draft4_format_checker = Draft4Validator.FORMAT_CHECKER
+except AttributeError:          # jsonschema < 4.5.0
+    from jsonschema import draft4_format_checker
 
 
 class TypeValidationError(Exception):
