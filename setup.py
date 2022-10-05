@@ -18,7 +18,7 @@ def read_version(package):
 version = read_version("especifico")
 
 install_requires = [
-    "jsonschema>=2.5.1,<5",
+    "jsonschema>=4.0.1,<5",
     "PyYAML>=5.1,<7",
     "requests>=2.19.1,<3",
     "inflection>=0.3.1,<0.6",
