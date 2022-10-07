@@ -72,11 +72,11 @@ def canonical_base_path(base_path):
 
 
 class Specification(Mapping):
-    def __init__(self, raw_spec):
+    def __init__(self, raw_spec, ref_resolver_store=None):
         self._raw_spec = copy.deepcopy(raw_spec)
         self._set_defaults(raw_spec)
         self._validate_spec(raw_spec)
-        self._spec = resolve_refs(raw_spec)
+        self._spec = resolve_refs(raw_spec, store=ref_resolver_store)
 
     @classmethod
     @abc.abstractmethod
@@ -141,13 +141,13 @@ class Specification(Mapping):
         return yaml.load(openapi_string, Loader=YAMLSafeLoader)
 
     @classmethod
-    def from_file(cls, spec, arguments=None):
+    def from_file(cls, spec, arguments=None, ref_resolver_store=None):
         """
         Takes in a path to a YAML file, and returns a Specification
         """
         specification_path = pathlib.Path(spec)
         spec = cls._load_spec_from_file(arguments, specification_path)
-        return cls.from_dict(spec)
+        return cls.from_dict(spec, ref_resolver_store)
 
     @staticmethod
     def _get_spec_version(spec):
@@ -168,7 +168,7 @@ class Specification(Mapping):
         return version_tuple
 
     @classmethod
-    def from_dict(cls, spec):
+    def from_dict(cls, spec, ref_resolver_store=None):
         """
         Takes in a dictionary, and returns a Specification
         """
@@ -182,17 +182,17 @@ class Specification(Mapping):
         spec = enforce_string_keys(spec)
         version = cls._get_spec_version(spec)
         if version < (3, 0, 0):
-            return Swagger2Specification(spec)
-        return OpenAPISpecification(spec)
+            return Swagger2Specification(spec, ref_resolver_store)
+        return OpenAPISpecification(spec, ref_resolver_store)
 
     def clone(self):
         return type(self)(copy.deepcopy(self._raw_spec))
 
     @classmethod
-    def load(cls, spec, arguments=None):
+    def load(cls, spec, arguments=None, ref_resolver_store=None):
         if not isinstance(spec, dict):
-            return cls.from_file(spec, arguments=arguments)
-        return cls.from_dict(spec)
+            return cls.from_file(spec, arguments=arguments, ref_resolver_store=ref_resolver_store)
+        return cls.from_dict(spec, ref_resolver_store=ref_resolver_store)
 
     def with_base_path(self, base_path):
         new_spec = self.clone()
