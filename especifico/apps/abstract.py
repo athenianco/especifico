@@ -117,6 +117,7 @@ class AbstractApp(metaclass=abc.ABCMeta):
         pass_context_arg_name=None,
         options=None,
         validator_map=None,
+        ref_resolver_store=None,
     ):
         """
         Adds an API to the application based on a swagger file or API dict
@@ -185,6 +186,7 @@ class AbstractApp(metaclass=abc.ABCMeta):
             pythonic_params=pythonic_params,
             pass_context_arg_name=pass_context_arg_name,
             options=api_options.as_dict(),
+            ref_resolver_store=ref_resolver_store,
         )
         return api
 

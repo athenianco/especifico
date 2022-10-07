@@ -53,6 +53,7 @@ class AbstractAPI(metaclass=AbstractAPIMeta):
         pythonic_params=False,
         pass_context_arg_name=None,
         options=None,
+        ref_resolver_store=None,
     ):
         """
         :type specification: pathlib.Path | dict
@@ -93,7 +94,9 @@ class AbstractAPI(metaclass=AbstractAPIMeta):
         )
 
         # Avoid validator having ability to modify specification
-        self.specification = Specification.load(specification, arguments=arguments)
+        self.specification = Specification.load(
+            specification, arguments=arguments, ref_resolver_store=ref_resolver_store,
+        )
 
         logger.debug("Read specification", extra={"spec": self.specification})
 
