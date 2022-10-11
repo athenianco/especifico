@@ -6,7 +6,7 @@ inflection==0.5.1
 werkzeug==2.2.2
 packaging==21.3
 swagger-ui-bundle==0.0.9
-flask==2.1.1
+flask==2.2.2
 itsdangerous==2.1.2
 aiohttp==3.8.3
 aiohttp-jinja2==1.5
