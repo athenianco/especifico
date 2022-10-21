@@ -120,13 +120,16 @@ class OpenAPIOperation(AbstractOperation):
             },
         }
 
-        self._request_body = operation.get("requestBody", {})
+        # self._request_body and self._responses are modified by with_definitions
+        # copy them to ensure no global data (for instance schemas in ref_resolver_store )
+        # is modified
+        self._request_body = deepcopy(operation.get("requestBody", {}))
 
         self._parameters = operation.get("parameters", [])
         if path_parameters:
             self._parameters += path_parameters
 
-        self._responses = operation.get("responses", {})
+        self._responses = deepcopy(operation.get("responses", {}))
 
         # TODO figure out how to support multiple mimetypes
         # NOTE we currently just combine all of the possible mimetypes,
