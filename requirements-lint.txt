@@ -20,4 +20,4 @@ types-PyYAML==6.0.12
 types-requests==2.28.11.2
 types-setuptools==65.4.0.0
 types-ujson==5.5.0
-sphinx-autoapi==1.9.0
+sphinx-autoapi==2.0.0
