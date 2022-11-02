@@ -79,27 +79,37 @@ def resolve_refs(spec, store=None, handlers=None):
     handlers = handlers or default_handlers
     resolver = RefResolver("", spec, store, handlers=handlers)
 
-    def _do_resolve(node):
-        if isinstance(node, Mapping) and "$ref" in node:
-            path = node["$ref"][2:].split("/")
-            try:
-                # resolve known references
-                node.update(deep_get(spec, path))
-                del node["$ref"]
-                return node
-            except KeyError:
-                # resolve external references
-                with resolver.resolving(node["$ref"]) as resolved:
-                    return resolved
-        elif isinstance(node, Mapping):
-            for k, v in node.items():
-                node[k] = _do_resolve(v)
+    def _do_resolve(node, path):
+        if isinstance(node, Mapping):
+            if "$ref" in node:
+                path = node["$ref"][2:].split("/")
+                try:
+                    # resolve known references
+                    node.update(deep_get(spec, path))
+                    del node["$ref"]
+                    return node
+                except KeyError:
+                    # resolve external references
+                    with resolver.resolving(node["$ref"]) as resolved:
+                        return resolved
+            else:
+                for k, v in node.items():
+                    # do not resolve refs in jsonschema nested in the spec
+                    # jsonschema library can resolve them by itself
+                    if (
+                            (k == "components" and not path)
+                            or (k == "schema" and path[-2:] == ["content", "application/json"])
+                    ):
+                        resolved = v
+                    else:
+                        resolved = _do_resolve(v, path + [k])
+                    node[k] = resolved
         elif isinstance(node, (list, tuple)):
             for i, _ in enumerate(node):
-                node[i] = _do_resolve(node[i])
+                node[i] = _do_resolve(node[i], path + [f"[{i}]"])
         return node
 
-    res = _do_resolve(spec)
+    res = _do_resolve(spec, path=[])
     return res
 
 
