@@ -265,8 +265,7 @@ class ParameterValidator:
         self.api = api
         self.strict_validation = strict_validation
 
-    @staticmethod
-    def validate_parameter(parameter_type, value, param, param_name=None):
+    def validate_parameter(self, parameter_type, value, param, param_name=None):
         if value is not None:
             if is_nullable(param) and is_null(value):
                 return

@@ -9,48 +9,48 @@ from especifico.json_schema import (Draft4RequestValidator,
                                     Draft4ResponseValidator)
 
 
-def test_get_valid_parameter():
-    result = ParameterValidator.validate_parameter(
+def test_get_valid_parameter(parameter_validator):
+    result = parameter_validator.validate_parameter(
         "formdata", 20, {"type": "number", "name": "foobar"},
     )
     assert result is None
 
 
-def test_get_valid_parameter_with_required_attr():
+def test_get_valid_parameter_with_required_attr(parameter_validator):
     param = {"type": "number", "required": True, "name": "foobar"}
-    result = ParameterValidator.validate_parameter("formdata", 20, param)
+    result = parameter_validator.validate_parameter("formdata", 20, param)
     assert result is None
 
 
-def test_get_valid_path_parameter():
+def test_get_valid_path_parameter(parameter_validator):
     param = {"required": True, "schema": {"type": "number"}, "name": "foobar"}
-    result = ParameterValidator.validate_parameter("path", 20, param)
+    result = parameter_validator.validate_parameter("path", 20, param)
     assert result is None
 
 
-def test_get_missing_required_parameter():
+def test_get_missing_required_parameter(parameter_validator):
     param = {"type": "number", "required": True, "name": "foo"}
-    result = ParameterValidator.validate_parameter("formdata", None, param)
+    result = parameter_validator.validate_parameter("formdata", None, param)
     assert result == "Missing formdata parameter 'foo'"
 
 
-def test_get_x_nullable_parameter():
+def test_get_x_nullable_parameter(parameter_validator):
     param = {"type": "number", "required": True, "name": "foo", "x-nullable": True}
-    result = ParameterValidator.validate_parameter("formdata", "None", param)
+    result = parameter_validator.validate_parameter("formdata", "None", param)
     assert result is None
 
 
-def test_get_nullable_parameter():
+def test_get_nullable_parameter(parameter_validator):
     param = {
         "schema": {"type": "number", "nullable": True},
         "required": True,
         "name": "foo",
     }
-    result = ParameterValidator.validate_parameter("query", "null", param)
+    result = parameter_validator.validate_parameter("query", "null", param)
     assert result is None
 
 
-def test_get_explodable_object_parameter():
+def test_get_explodable_object_parameter(parameter_validator):
     param = {
         "schema": {"type": "object", "additionalProperties": True},
         "required": True,
@@ -58,11 +58,11 @@ def test_get_explodable_object_parameter():
         "style": "deepObject",
         "explode": True,
     }
-    result = ParameterValidator.validate_parameter("query", {"bar": 1}, param)
+    result = parameter_validator.validate_parameter("query", {"bar": 1}, param)
     assert result is None
 
 
-def test_get_valid_parameter_with_enum_array_header():
+def test_get_valid_parameter_with_enum_array_header(parameter_validator):
     value = "VALUE1,VALUE2"
     param = {
         "schema": {
@@ -71,14 +71,14 @@ def test_get_valid_parameter_with_enum_array_header():
         },
         "name": "test_header_param",
     }
-    result = ParameterValidator.validate_parameter("header", value, param)
+    result = parameter_validator.validate_parameter("header", value, param)
     assert result is None
 
 
-def test_invalid_type(monkeypatch):
+def test_invalid_type(monkeypatch, parameter_validator):
     logger = MagicMock()
     monkeypatch.setattr("especifico.decorators.validation.logger", logger)
-    result = ParameterValidator.validate_parameter(
+    result = parameter_validator.validate_parameter(
         "formdata", 20, {"type": "string", "name": "foo"},
     )
     expected_result = """20 is not of type 'string'
@@ -92,22 +92,22 @@ On instance:
     logger.info.assert_called_once()
 
 
-def test_invalid_type_value_error(monkeypatch):
+def test_invalid_type_value_error(monkeypatch, parameter_validator):
     logger = MagicMock()
     monkeypatch.setattr("especifico.decorators.validation.logger", logger)
     value = {"test": 1, "second": 2}
-    result = ParameterValidator.validate_parameter(
+    result = parameter_validator.validate_parameter(
         "formdata", value, {"type": "boolean", "name": "foo"},
     )
     assert result == "Wrong type, expected 'boolean' for formdata parameter 'foo'"
 
 
-def test_enum_error(monkeypatch):
+def test_enum_error(monkeypatch, parameter_validator):
     logger = MagicMock()
     monkeypatch.setattr("especifico.decorators.validation.logger", logger)
     value = "INVALID"
     param = {"schema": {"type": "string", "enum": ["valid"]}, "name": "test_path_param"}
-    result = ParameterValidator.validate_parameter("path", value, param)
+    result = parameter_validator.validate_parameter("path", value, param)
     assert result.startswith("'INVALID' is not one of ['valid']")
 
 
@@ -197,15 +197,14 @@ def test_writeonly_required_error():
         Draft4RequestValidator(schema).validate({"bar": "baz"})
 
 
-def test_formdata_extra_parameter_strict():
+def test_formdata_extra_parameter_strict(parameter_validator):
     """Tests that especifico handles explicitly defined formData parameters well across Swagger 2
     and OpenApi 3. In Swagger 2, any formData parameter should be defined explicitly, while in
     OpenAPI 3 this is not allowed. See issues #1020 #1160 #1340 #1343."""
     request = MagicMock(form={"param": "value", "extra_param": "extra_value"})
 
     # OAS3
-    validator = ParameterValidator([], FlaskApi, strict_validation=True)
-    errors = validator.validate_formdata_parameter_list(request)
+    errors = parameter_validator.validate_formdata_parameter_list(request)
     assert not errors
 
     # Swagger 2
@@ -214,3 +213,8 @@ def test_formdata_extra_parameter_strict():
     )
     errors = validator.validate_formdata_parameter_list(request)
     assert errors
+
+
+@pytest.fixture(scope="function")
+def parameter_validator() -> ParameterValidator:
+    return ParameterValidator([], FlaskApi, strict_validation=True)
