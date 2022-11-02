@@ -477,7 +477,9 @@ class AbstractOperation(SecureOperation, metaclass=abc.ABCMeta):
         :rtype: types.FunctionType
         """
         ResponseValidator = self.validator_map["response"]
-        return ResponseValidator(self, self.get_mimetype())
+        return ResponseValidator(
+            self, self.get_mimetype(), ref_resolver_store=self._ref_resolver_store,
+        )
 
     def json_loads(self, data):
         """

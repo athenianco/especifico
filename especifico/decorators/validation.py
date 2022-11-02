@@ -233,7 +233,7 @@ class RequestBodyValidator:
 
 
 class ResponseBodyValidator:
-    def __init__(self, schema, validator=None):
+    def __init__(self, schema, validator=None, ref_resolver_store=None):
         """
         :param schema: The schema of the response body
         :param validator: Validator class that should be used to validate passed data
@@ -241,7 +241,11 @@ class ResponseBodyValidator:
         :type validator: jsonschema.IValidator
         """
         ValidatorClass = validator or Draft4ResponseValidator
-        self.validator = ValidatorClass(schema, format_checker=draft4_format_checker)
+        if ref_resolver_store is None:
+            resolver = None
+        else:
+            resolver = RefResolver.from_schema(schema, store=ref_resolver_store)
+        self.validator = ValidatorClass(schema, format_checker=draft4_format_checker, resolver=resolver)
 
     def validate_schema(self, data: dict, url: str) -> Union[EspecificoResponse, None]:
         try:

@@ -18,7 +18,7 @@ logger = logging.getLogger("especifico.decorators.response")
 
 
 class ResponseValidator(BaseDecorator):
-    def __init__(self, operation, mimetype, validator=None):
+    def __init__(self, operation, mimetype, validator=None, ref_resolver_store=None):
         """
         :type operation: Operation
         :type mimetype: str
@@ -29,6 +29,7 @@ class ResponseValidator(BaseDecorator):
         self.operation = operation
         self.mimetype = mimetype
         self.validator = validator
+        self._ref_resolver_store = ref_resolver_store
 
     def validate_response(self, data, status_code, headers, url):
         """
@@ -47,7 +48,11 @@ class ResponseValidator(BaseDecorator):
         response_schema = self.operation.response_schema(str(status_code), content_type)
 
         if self.is_json_schema_compatible(response_schema, content_type):
-            v = ResponseBodyValidator(response_schema, validator=self.validator)
+            v = ResponseBodyValidator(
+                response_schema,
+                validator=self.validator,
+                ref_resolver_store=self._ref_resolver_store,
+            )
             try:
                 data = self.operation.json_loads(data)
             except ValueError as e:
