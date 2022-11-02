@@ -467,6 +467,7 @@ class AbstractOperation(SecureOperation, metaclass=abc.ABCMeta):
                 self.api,
                 is_nullable(self.body_definition),
                 strict_validation=self.strict_validation,
+                ref_resolver_store=self._ref_resolver_store,
             )
 
     @property

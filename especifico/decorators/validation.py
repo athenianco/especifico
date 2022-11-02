@@ -112,6 +112,7 @@ class RequestBodyValidator:
         is_null_value_valid=False,
         validator=None,
         strict_validation=False,
+        ref_resolver_store=None,
     ):
         """
         :param schema: The schema of the request body
@@ -127,7 +128,11 @@ class RequestBodyValidator:
         self.has_default = schema.get("default", False)
         self.is_null_value_valid = is_null_value_valid
         validatorClass = validator or Draft4RequestValidator
-        self.validator = validatorClass(schema, format_checker=draft4_format_checker)
+        resolver = _build_ref_resolver(ref_resolver_store, schema)
+        self.validator = validatorClass(
+            schema, format_checker=draft4_format_checker, resolver=resolver,
+        )
+
         self.api = api
         self.strict_validation = strict_validation
 
