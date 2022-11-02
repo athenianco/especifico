@@ -37,6 +37,7 @@ class OpenAPIOperation(AbstractOperation):
         pythonic_params=False,
         uri_parser_class=None,
         pass_context_arg_name=None,
+        ref_resolver_store=None,
     ):
         """
         This class uses the OperationID identify the module and function that will handle the operation
@@ -106,6 +107,7 @@ class OpenAPIOperation(AbstractOperation):
             pythonic_params=pythonic_params,
             uri_parser_class=uri_parser_class,
             pass_context_arg_name=pass_context_arg_name,
+            ref_resolver_store=ref_resolver_store,
         )
 
         self._definitions_map = {
