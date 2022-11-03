@@ -61,6 +61,7 @@ class AbstractOperation(SecureOperation, metaclass=abc.ABCMeta):
         pythonic_params=False,
         uri_parser_class=None,
         pass_context_arg_name=None,
+        ref_resolver_store=None,
     ):
         """
         :param api: api that this operation is attached to
@@ -107,6 +108,7 @@ class AbstractOperation(SecureOperation, metaclass=abc.ABCMeta):
         self._pythonic_params = pythonic_params
         self._uri_parser_class = uri_parser_class
         self._pass_context_arg_name = pass_context_arg_name
+        self._ref_resolver_store = ref_resolver_store
         self._randomize_endpoint = randomize_endpoint
 
         self._operation_id = self._operation.get("operationId")
@@ -453,7 +455,10 @@ class AbstractOperation(SecureOperation, metaclass=abc.ABCMeta):
         RequestBodyValidator = self.validator_map["body"]
         if self.parameters:
             yield ParameterValidator(
-                self.parameters, self.api, strict_validation=self.strict_validation,
+                self.parameters,
+                self.api,
+                strict_validation=self.strict_validation,
+                ref_resolver_store=self._ref_resolver_store,
             )
         if self.body_schema:
             yield RequestBodyValidator(
@@ -462,6 +467,7 @@ class AbstractOperation(SecureOperation, metaclass=abc.ABCMeta):
                 self.api,
                 is_nullable(self.body_definition),
                 strict_validation=self.strict_validation,
+                ref_resolver_store=self._ref_resolver_store,
             )
 
     @property
@@ -471,7 +477,9 @@ class AbstractOperation(SecureOperation, metaclass=abc.ABCMeta):
         :rtype: types.FunctionType
         """
         ResponseValidator = self.validator_map["response"]
-        return ResponseValidator(self, self.get_mimetype())
+        return ResponseValidator(
+            self, self.get_mimetype(), ref_resolver_store=self._ref_resolver_store,
+        )
 
     def json_loads(self, data):
         """

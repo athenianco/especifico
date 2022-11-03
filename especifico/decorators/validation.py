@@ -7,9 +7,9 @@ import collections
 import copy
 import functools
 import logging
-from typing import AnyStr, Union
+from typing import AnyStr, Optional, Union
 
-from jsonschema import Draft4Validator, ValidationError
+from jsonschema import Draft4Validator, RefResolver, ValidationError
 from jsonschema.validators import extend
 from werkzeug.datastructures import FileStorage
 
@@ -112,6 +112,7 @@ class RequestBodyValidator:
         is_null_value_valid=False,
         validator=None,
         strict_validation=False,
+        ref_resolver_store=None,
     ):
         """
         :param schema: The schema of the request body
@@ -127,7 +128,11 @@ class RequestBodyValidator:
         self.has_default = schema.get("default", False)
         self.is_null_value_valid = is_null_value_valid
         validatorClass = validator or Draft4RequestValidator
-        self.validator = validatorClass(schema, format_checker=draft4_format_checker)
+        resolver = _build_ref_resolver(ref_resolver_store, schema)
+        self.validator = validatorClass(
+            schema, format_checker=draft4_format_checker, resolver=resolver,
+        )
+
         self.api = api
         self.strict_validation = strict_validation
 
@@ -228,7 +233,7 @@ class RequestBodyValidator:
 
 
 class ResponseBodyValidator:
-    def __init__(self, schema, validator=None):
+    def __init__(self, schema, validator=None, ref_resolver_store=None):
         """
         :param schema: The schema of the response body
         :param validator: Validator class that should be used to validate passed data
@@ -236,7 +241,11 @@ class ResponseBodyValidator:
         :type validator: jsonschema.IValidator
         """
         ValidatorClass = validator or Draft4ResponseValidator
-        self.validator = ValidatorClass(schema, format_checker=draft4_format_checker)
+        if ref_resolver_store is None:
+            resolver = None
+        else:
+            resolver = RefResolver.from_schema(schema, store=ref_resolver_store)
+        self.validator = ValidatorClass(schema, format_checker=draft4_format_checker, resolver=resolver)
 
     def validate_schema(self, data: dict, url: str) -> Union[EspecificoResponse, None]:
         try:
@@ -252,7 +261,7 @@ class ResponseBodyValidator:
 
 
 class ParameterValidator:
-    def __init__(self, parameters, api, strict_validation=False):
+    def __init__(self, parameters, api, strict_validation=False, ref_resolver_store=None):
         """
         :param parameters: List of request parameter dictionaries
         :param api: api that the validator is attached to
@@ -264,9 +273,9 @@ class ParameterValidator:
 
         self.api = api
         self.strict_validation = strict_validation
+        self._ref_resolver_store = ref_resolver_store
 
-    @staticmethod
-    def validate_parameter(parameter_type, value, param, param_name=None):
+    def validate_parameter(self, parameter_type, value, param, param_name=None):
         if value is not None:
             if is_nullable(param) and is_null(value):
                 return
@@ -280,21 +289,25 @@ class ParameterValidator:
             param = param.get("schema", param)
             if "required" in param:
                 del param["required"]
+
+            ref_resolver = _build_ref_resolver(self._ref_resolver_store, param)
+            if parameter_type == "formdata" and param.get("type") == "file":
+                ValidatorCls = extend(
+                    Draft4Validator,
+                    type_checker=Draft4Validator.TYPE_CHECKER.redefine(
+                        "file",
+                        lambda checker, instance: isinstance(instance, FileStorage),
+                    ),
+                )
+            else:
+                ValidatorCls = Draft4Validator
+
+            validator = ValidatorCls(
+                param, format_checker=draft4_format_checker, resolver=ref_resolver,
+            )
+
             try:
-                if parameter_type == "formdata" and param.get("type") == "file":
-                    extend(
-                        Draft4Validator,
-                        type_checker=Draft4Validator.TYPE_CHECKER.redefine(
-                            "file",
-                            lambda checker, instance: isinstance(instance, FileStorage),
-                        ),
-                    )(param, format_checker=draft4_format_checker).validate(
-                        converted_value,
-                    )
-                else:
-                    Draft4Validator(param, format_checker=draft4_format_checker).validate(
-                        converted_value,
-                    )
+                validator.validate(converted_value)
             except ValidationError as exception:
                 logger.info(
                     f"Error while converting value {converted_value} from param "
@@ -394,3 +407,10 @@ class ParameterValidator:
             return function(request)
 
         return wrapper
+
+
+def _build_ref_resolver(ref_resolver_store, schema) -> Optional[RefResolver]:
+    if ref_resolver_store is None:
+        return None
+    else:
+        return RefResolver.from_schema(schema, store=ref_resolver_store)

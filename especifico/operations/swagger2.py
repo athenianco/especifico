@@ -48,6 +48,7 @@ class Swagger2Operation(AbstractOperation):
         pythonic_params=False,
         uri_parser_class=None,
         pass_context_arg_name=None,
+        ref_resolver_store=None,
     ):
         """
         :param api: api that this operation is attached to
@@ -115,6 +116,7 @@ class Swagger2Operation(AbstractOperation):
             pythonic_params=pythonic_params,
             uri_parser_class=uri_parser_class,
             pass_context_arg_name=pass_context_arg_name,
+            ref_resolver_store=ref_resolver_store,
         )
 
         self._produces = operation.get("produces", app_produces)

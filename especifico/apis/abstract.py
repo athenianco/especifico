@@ -81,6 +81,7 @@ class AbstractAPI(metaclass=AbstractAPIMeta):
         self.debug = debug
         self.validator_map = validator_map
         self.resolver_error_handler = resolver_error_handler
+        self._ref_resolver_store = ref_resolver_store
 
         logger.debug(
             "Loading specification: %s",
@@ -208,6 +209,7 @@ class AbstractAPI(metaclass=AbstractAPIMeta):
             pythonic_params=self.pythonic_params,
             uri_parser_class=self.options.uri_parser_class,
             pass_context_arg_name=self.pass_context_arg_name,
+            ref_resolver_store=self._ref_resolver_store,
         )
         self._add_operation_internal(method, path, operation)
 
