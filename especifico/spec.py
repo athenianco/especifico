@@ -76,6 +76,7 @@ class Specification(Mapping):
         self._raw_spec = copy.deepcopy(raw_spec)
         self._set_defaults(raw_spec)
         self._validate_spec(raw_spec)
+        self._ref_resolver_store = ref_resolver_store
         self._spec = resolve_refs(raw_spec, store=ref_resolver_store)
 
     @classmethod
@@ -186,7 +187,7 @@ class Specification(Mapping):
         return OpenAPISpecification(spec, ref_resolver_store)
 
     def clone(self):
-        return type(self)(copy.deepcopy(self._raw_spec))
+        return type(self)(copy.deepcopy(self._raw_spec), self._ref_resolver_store)
 
     @classmethod
     def load(cls, spec, arguments=None, ref_resolver_store=None):
