@@ -19,5 +19,5 @@ mypy==0.982
 types-PyYAML==6.0.12.2
 types-requests==2.28.11.7
 types-setuptools==67.4.0.3
-types-ujson==5.5.0
+types-ujson==5.7.0.3
 sphinx-autoapi==2.0.1
