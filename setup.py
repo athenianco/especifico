@@ -63,7 +63,7 @@ setup(
     keywords="openapi oai swagger rest api oauth flask microservice framework",
     license="Apache License Version 2.0",
     python_requires=">=3.8",
-    install_requires=install_requires + flask_require,
+    install_requires=install_requires,
     tests_require=tests_require(),
     extras_require={
         "cli": ["clickclick>=1.2,<21"],
